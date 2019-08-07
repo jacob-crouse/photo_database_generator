@@ -2,7 +2,7 @@
 # Photo Database Generator                                       #
 # Author: Jacob Crouse                                           #
 # Date Created: August 6th, 2019                                 #
-# Date Modified: August 6th, 2019                                #
+# Date Modified: August 7th, 2019                                #
 # Purpose: This program is for randomly creating superimposed    #
 #          images that will be used to train neural networks     #
 #          for target recognition and object detection.          #
@@ -61,8 +61,13 @@ def superimpose(bg_copies, cropped_fores):
 
     for bg in range(numBackgrounds):
         for fore in range(numForegrounds):
+            #find a random location in the background to paste the foreground
+            bg_dim = bg_copies[bg][fore].size
+            random_x = np.random.random_integers(0,bg_dim[0],1)
+            random_y = np.random.random_integers(0,bg_dim[1],1)
+
             #superimpose the image
-            bg_copies[bg][fore].paste(cropped_fores[bg][fore])
+            bg_copies[bg][fore].paste(cropped_fores[bg][fore], [random_x, random_y])
 
             #generate the name, format: bgX_fgX.png
             filename = "bg" + str(bg) + "_" + "fg" + str(fore) + ".png"
