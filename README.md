@@ -6,8 +6,9 @@ The purpose of this program is to minimize repetitive work necessary when creati
 
 ## Future Changes
 In the future, I would like to improve this program by adding the following functionality:
-1. Better organize generated photos (put them all in a folder)
-2. Take folder inputs for fore and background images instead of explicitly stating them. 
-3. Improve user-friendliness by making the executable prompt the user for folder locations.
-4. Add a simple GUI to improve user-friendliness.
-5. Improve extensibility?
+1. Implement ability to print many random copies, instead of just one random copy per fore/background combination.
+2. Better organize generated photos (put them all in a folder)
+3. Take folder inputs for fore and background images instead of explicitly stating them. 
+4. Improve user-friendliness by making the executable prompt the user for folder locations.
+5. Add a simple GUI to improve user-friendliness.
+6. Improve extensibility?

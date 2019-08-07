@@ -67,6 +67,10 @@ def superimpose(bg_copies, cropped_fores):
             random_y = np.random.random_integers(0,bg_dim[1],1)
 
             #superimpose the image
+            print("The images are:\n")
+            print(bg_copies[bg][fore])
+            print("\n")
+            print(cropped_fores[bg][fore])
             bg_copies[bg][fore].paste(cropped_fores[bg][fore], [random_x, random_y])
 
             #generate the name, format: bgX_fgX.png
@@ -102,6 +106,7 @@ crop_sizes = calcSizes(box_physical_dims, fore_dims, bg_dims, numBackgrounds, nu
 
 #generate the cropped images
 cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references)
+print(cropped_fores)
 
 #generate the right amount of copies of the background images
 bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references)
