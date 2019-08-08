@@ -9,9 +9,10 @@
 ##################################################################
 from PIL import Image
 import numpy as np
+import os
 
 #define constant variables
-numPhotosToGeneratePerBackground = 5
+numPhotosToGeneratePerBackground = int(input("How many photos would you like per background?: "))
 numBackgrounds = 4
 numForegrounds = 3
 totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #number of photos to be generated
@@ -62,6 +63,18 @@ def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhot
 def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
     overflowCounter = 0
 
+    #change the working directory to a pre-generated folder (for organization)
+    try:
+        filename = "generated_photos"
+        os.mkdir(filename)
+    except:
+        print("I would move the generated_photos folder out of the current directory...\n")
+        filename = "generated_photos1"
+        os.mkdir(filename)
+
+    fd = os.open(filename, os.O_RDONLY)
+    os.fchdir(fd)
+
     for bg in range(numBackgrounds):
         overflowCounter = 0
         for fore in range(int(np.floor(totalPhotosToGenerate/numBackgrounds))):
@@ -91,6 +104,9 @@ def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
 
             #save the image
             bg_copies[bg][fore].save(filename)
+
+    os.close(fd)
+    os.chdir("..")
 
 #import the postbox images
 RED = Image.open("red.png")
