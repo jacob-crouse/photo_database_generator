@@ -2,7 +2,7 @@
 # Photo Database Generator                                       #
 # Author: Jacob Crouse                                           #
 # Date Created: August 6th, 2019                                 #
-# Date Modified: August 7th, 2019                                #
+# Date Modified: August 8th, 2019                                #
 # Purpose: This program is for randomly creating superimposed    #
 #          images that will be used to train neural networks     #
 #          for target recognition and object detection.          #
@@ -11,9 +11,10 @@ from PIL import Image
 import numpy as np
 
 #define constant variables
-numPhotos = 100 #number of photos to be generated
+numPhotosToGeneratePerBackground = 5
 numBackgrounds = 4
 numForegrounds = 3
+totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #number of photos to be generated
 background_dims = (60.50, 80.56) #m, grounddimensions of the image from 25m above the ground
 boxDims_red = (0.75, 0.65) #m, dimensions of the post box
 boxDims_blue = (1.2, 1.2) #m, dimensions of the post box
@@ -46,21 +47,24 @@ def genCroppedImages(numBackgrounds, numForegrounds, fore_references): #rows = b
     return cropped_fores
 
 #for each background, create one copy per foreground
-def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references): #rows = bg, cols = fore
+# note -- For right now, the number of copies must be a multiple of the fore and background images.
+def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate): #rows = bg, cols = fore
     bg_copies = []
 
     for bg in range(numBackgrounds):
         bg_copies += [[]]
-        for fore in range(numForegrounds):
+        for fore in range(int(np.floor(totalPhotosToGenerate/numBackgrounds))):
             bg_copies[bg].append(bg_references[bg].copy())
 
     return bg_copies
 
 #superimpose each foreground image onto each background image
-def superimpose(bg_copies, cropped_fores):
+def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
+    overflowCounter = 0
 
     for bg in range(numBackgrounds):
-        for fore in range(numForegrounds):
+        overflowCounter = 0
+        for fore in range(int(np.floor(totalPhotosToGenerate/numBackgrounds))):
             #find a random location in the background to paste the foreground
             bg_dim = bg_copies[bg][fore].size
             random_x = np.random.random_integers(0,bg_dim[0],1) #pixels
@@ -73,12 +77,14 @@ def superimpose(bg_copies, cropped_fores):
             print("The images are:\n")
             print(bg_copies[bg][fore])
             print("\n")
-            #print(cropped_fores[bg][fore])
-            #print("Cropped Fore Size: ")
-            #print(str(cropped_fores[bg][fore].size))
-            #print(", Rand. Loc: " + str([random_x, random_y]) + ", Rand. Angle: " + str(random_ang) + "\n")
 
-            bg_copies[bg][fore].paste(cropped_fores[bg][fore].rotate(random_ang), [random_x, random_y])
+            #in the event that totalPhotosToGenerate/numBackgrounds>numForegrounds, start with the first fg again
+            if (fore >= numForegrounds) and (overflowCounter >= numForegrounds):
+                overflowCounter = 0
+
+            bg_copies[bg][fore].paste(cropped_fores[bg][overflowCounter].rotate(random_ang), [random_x, random_y])
+            print(overflowCounter)
+            overflowCounter += 1
 
             #generate the name, format: bgX_fgX.png
             filename = "bg" + str(bg) + "_" + "fg" + str(fore) + ".png"
@@ -113,10 +119,10 @@ crop_sizes = calcSizes(box_physical_dims, fore_dims, bg_dims, numBackgrounds, nu
 
 #generate the cropped images
 cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references)
-print(cropped_fores)
+#print(cropped_fores)
 
 #generate the right amount of copies of the background images
-bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references)
+bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate)
 
 #superimpose each foreground onto each background, save the images
-superimpose(bg_copies, cropped_fores)
+superimpose(bg_copies, cropped_fores, totalPhotosToGenerate)
