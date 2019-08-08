@@ -63,15 +63,22 @@ def superimpose(bg_copies, cropped_fores):
         for fore in range(numForegrounds):
             #find a random location in the background to paste the foreground
             bg_dim = bg_copies[bg][fore].size
-            random_x = np.random.random_integers(0,bg_dim[0],1)
-            random_y = np.random.random_integers(0,bg_dim[1],1)
+            random_x = np.random.random_integers(0,bg_dim[0],1) #pixels
+            random_y = np.random.random_integers(0,bg_dim[1],1) #pixels
+
+            #find a random angle by which to rotate the foreground
+            random_ang = np.random.random_integers(0,360,1) #degrees
 
             #superimpose the image
             print("The images are:\n")
             print(bg_copies[bg][fore])
             print("\n")
-            print(cropped_fores[bg][fore])
-            bg_copies[bg][fore].paste(cropped_fores[bg][fore], [random_x, random_y])
+            #print(cropped_fores[bg][fore])
+            #print("Cropped Fore Size: ")
+            #print(str(cropped_fores[bg][fore].size))
+            #print(", Rand. Loc: " + str([random_x, random_y]) + ", Rand. Angle: " + str(random_ang) + "\n")
+
+            bg_copies[bg][fore].paste(cropped_fores[bg][fore].rotate(random_ang), [random_x, random_y])
 
             #generate the name, format: bgX_fgX.png
             filename = "bg" + str(bg) + "_" + "fg" + str(fore) + ".png"
