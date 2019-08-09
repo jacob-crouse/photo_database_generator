@@ -4,8 +4,10 @@
 The purpose of this program is to minimize repetitive work necessary when creating large, randomized photo databases which are generally used for training neural networks. Normally when doing this sort of work, it involves superimposing some image over a background in random locations and orientations in order to increase the material the neural network has to train with. But, this can be time-consuming and tedious, so I wanted to create this program to speed that process up.
 
 ## Install Dependencies
-This python script requires the numpy and Pillow modules. If you don't have Python or these modules installed, you can run:
-`sh install_dependencies.sh`
+This python script requires the numpy and Pillow modules. If you don't have Python or these modules installed, you can run:  
+
+`sh install_dependencies.sh`  
+
 to install all the dependencies (this script only works in Ubuntu Linux at the moment). This script should be run before the python script is used for the first time.  
 
 ## Setup
