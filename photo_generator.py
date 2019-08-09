@@ -1,4 +1,4 @@
-##################################################################
+##################################################################:
 # Photo Database Generator                                       #
 # Author: Jacob Crouse                                           #
 # Date Created: August 6th, 2019                                 #
@@ -80,23 +80,18 @@ def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
         for fore in range(int(np.floor(totalPhotosToGenerate/numBackgrounds))):
             #find a random location in the background to paste the foreground
             bg_dim = bg_copies[bg][fore].size
-            random_x = np.random.random_integers(0,bg_dim[0],1) #pixels
-            random_y = np.random.random_integers(0,bg_dim[1],1) #pixels
+            random_x = np.random.randint(0,bg_dim[0],1) #pixels
+            random_y = np.random.randint(0,bg_dim[1],1) #pixels
 
             #find a random angle by which to rotate the foreground
-            random_ang = np.random.random_integers(0,360,1) #degrees
-
-            #superimpose the image
-            print("The images are:\n")
-            print(bg_copies[bg][fore])
-            print("\n")
+            random_ang = np.random.randint(0,360,1) #degrees
 
             #in the event that totalPhotosToGenerate/numBackgrounds>numForegrounds, start with the first fg again
             if (fore >= numForegrounds) and (overflowCounter >= numForegrounds):
                 overflowCounter = 0
 
+            #superimpose the image
             bg_copies[bg][fore].paste(cropped_fores[bg][overflowCounter].rotate(random_ang), [random_x, random_y])
-            print(overflowCounter)
             overflowCounter += 1
 
             #generate the name, format: bgX_fgX.png
@@ -108,34 +103,35 @@ def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
     os.close(fd)
     os.chdir("..")
 
-#import the postbox images
-RED = Image.open("red.png")
-RED_dims = RED.size
-BLUE = Image.open("blue.png")
-BLUE_dims = BLUE.size
-YELLOW = Image.open("yellow.png")
-YELLOW_dims = YELLOW.size
-fore_dims = (RED_dims, BLUE_dims, YELLOW_dims)
-fore_references = (RED, BLUE, YELLOW)
+#import all the foregrounds
+os.chdir("foregrounds")
+foreground_files = os.listdir(".")
+fore_references = []
+fore_dims = []
+counter = 0
+for file in foreground_files:
+    fore_references += [Image.open(file)]
+    fore_dims += [fore_references[counter].size]
+    counter += 1
 
-#import the background images
-BG1 = Image.open("background1.png")
-BG1_dims = BG1.size
-BG2 = Image.open("background2.png")
-BG2_dims = BG2.size
-BG3 = Image.open("background3.png")
-BG3_dims = BG3.size
-BG4 = Image.open("background4.png")
-BG4_dims = BG4.size
-bg_dims = (BG1_dims, BG2_dims, BG3_dims, BG4_dims)
-bg_references = (BG1, BG2, BG3, BG4)
+#import all the backgrounds
+os.chdir("../backgrounds")
+background_files = os.listdir(".")
+bg_references = []
+bg_dims = []
+counter = 0
+for file in background_files:
+    bg_references += [Image.open(file)]
+    bg_dims += [bg_references[counter].size]
+    counter += 1
+
+os.chdir("..")
 
 #calculate the different sizes for the fore images
 crop_sizes = calcSizes(box_physical_dims, fore_dims, bg_dims, numBackgrounds, numForegrounds)
 
 #generate the cropped images
 cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references)
-#print(cropped_fores)
 
 #generate the right amount of copies of the background images
 bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate)
