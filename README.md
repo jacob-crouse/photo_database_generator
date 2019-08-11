@@ -23,7 +23,7 @@ At this point, the program will prompt you for a number of randomly-generated co
 
 In order to properly train a NN, you will need ground truth information, describing exactly where the foreground was superimposed. This information is provided in `ground_truth.txt` which is formatted in the following way:  
 
-`superimposed_image_name.png,top_left_xval,top_left_yval,bottom_right_xval,bottom_right,yval`  
+`superimposed_image_name.png,top_left_xval,top_left_yval,bottom_right_xval,bottom_right_yval`  
 
 These two (x,y) values describe a box which surrounds the superimposed image. The coordinate system for these coordinates starts at the top-left corner of the background image and +x moves toward the top-right of the image, and +y moves toward the bottom of the image. The bounding box is slightly larger than the superimposed images in an effort to reduce false-negatives.
 
