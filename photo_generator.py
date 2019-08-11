@@ -2,7 +2,7 @@
 # Photo Database Generator                                       #
 # Author: Jacob Crouse                                           #
 # Date Created: August 6th, 2019                                 #
-# Date Modified: August 8th, 2019                                #
+# Date Modified: August 11th, 2019                               #
 # Purpose: This program is for randomly creating superimposed    #
 #          images that will be used to train neural networks     #
 #          for target recognition and object detection.          #
@@ -48,7 +48,6 @@ def genCroppedImages(numBackgrounds, numForegrounds, fore_references): #rows = b
     return cropped_fores
 
 #for each background, create one copy per foreground
-# note -- For right now, the number of copies must be a multiple of the fore and background images.
 def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate): #rows = bg, cols = fore
     bg_copies = []
 
@@ -60,19 +59,28 @@ def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhot
     return bg_copies
 
 #superimpose each foreground image onto each background image
-def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
+def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
     overflowCounter = 0
 
     #change the working directory to a pre-generated folder (for organization)
     try:
-        filename = "generated_photos"
-        os.mkdir(filename)
+        foldername = "generated_photos"
+        os.mkdir(foldername)
     except:
         print("I would move the generated_photos folder out of the current directory...\n")
-        filename = "generated_photos1"
-        os.mkdir(filename)
+        foldername = "generated_photos1"
+        os.mkdir(foldername)
 
-    fd = os.open(filename, os.O_RDONLY)
+    #create the file which will contain the true locations of all the foregrounds
+    try:
+        filename = "ground_truth.txt"
+        f = open(filename, "w+")
+    except:
+        print("I would move the ground_truth.txt file out of the current directory...\n")
+        filename = "ground_truth1.txt"
+        f = open(filename, "w+")
+
+    fd = os.open(foldername, os.O_RDONLY)
     os.fchdir(fd)
 
     for bg in range(numBackgrounds):
@@ -92,14 +100,21 @@ def superimpose(bg_copies, cropped_fores, totalPhotosToGenerate):
 
             #superimpose the image
             bg_copies[bg][fore].paste(cropped_fores[bg][overflowCounter].rotate(random_ang), [random_x, random_y])
-            overflowCounter += 1
 
             #generate the name, format: bgX_fgX.png
-            filename = "bg" + str(bg) + "_" + "fg" + str(fore) + ".png"
+            image_name = "bg" + str(bg) + "_" + "fg" + str(fore) + ".png"
+
+            #save the ground truth info to a text file
+            largest_fore_dim = max(cropped_fores[bg][overflowCounter].size)
+            to_file = image_name + "," + str(random_x[0]) + "," + str(random_y[0]) + "," + str(random_x[0] + largest_fore_dim)  + "," + str(random_y[0] + largest_fore_dim) + ","
+            f.write(to_file)
 
             #save the image
-            bg_copies[bg][fore].save(filename)
+            bg_copies[bg][fore].save(image_name)
+            overflowCounter += 1
 
+    #close the file and folder
+    f.close()
     os.close(fd)
     os.chdir("..")
 
