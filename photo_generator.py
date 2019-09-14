@@ -55,22 +55,45 @@ def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
 
     #change the working directory to a pre-generated folder (for organization)
     try:
-        foldername = "generated_photos"
-        os.mkdir(foldername)
-    except:
-        print("I would move the generated_photos folder out of the current directory...\n")
         foldername = "generated_photos1"
         os.mkdir(foldername)
+    except:
+        base = "generated_photos"
+        i = 2
+        error = True
+        while error == True:
+            print("%s already exists. Trying %s..." % (foldername, base+str(i)))
+            foldername = base + str(i)
+            try:
+                os.mkdir(foldername)
+                error = False
+            except:
+                i += 1
+                continue
 
     #create the file which will contain the true locations of all the foregrounds
-    try:
-        filename = "ground_truth.txt"
-        f = open(filename, "w+")
-    except:
-        print("I would move the ground_truth.txt file out of the current directory...\n")
-        filename = "ground_truth1.txt"
-        f = open(filename, "w+")
+    allnames = os.listdir(".")
+    alreadyExists = True
+    i = 1
+    base = "ground_truth"
 
+    while alreadyExists == True:#checking to make sure I'm not overwriting a previous ground_truth.txt
+        counter = 1
+        filename = "ground_truth" + str(i) + ".txt"
+
+        for name in allnames:#checking the currently proposed filename against everything in the current directory
+            if name == filename:
+                print("%s already exists. Trying %s..." % (filename, base+str(i+1)+".txt"))
+                break
+            elif name != filename and counter == len(allnames):
+                alreadyExists = False
+                break
+
+            counter += 1
+
+        i += 1
+
+    f = open(filename, "w+")
     fd = os.open(foldername, os.O_RDONLY)
     os.fchdir(fd)
 
@@ -103,6 +126,8 @@ def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
             #save the image
             bg_copies[bg][fore].save(image_name)
             overflowCounter += 1
+            print("photo %d generated." % var.photosGenerated)
+            var.photosGenerated += 1
 
     #close the file and folder
     f.close()
@@ -119,6 +144,8 @@ numPhotosToGeneratePerBackground = int(input("How many photos would you like per
 #boxDims_blue = (1.2, 1.2) #m, dimensions of the post box
 #boxDims_yellow = (1.5, 1.5) #m, dimensions of the post box
 #box_physical_dims = (boxDims_red, boxDims_blue, boxDims_yellow)
+class var:
+    photosGenerated = 1
 
 
 #read in the input file parameters
@@ -187,6 +214,8 @@ for file in background_files:
     counter += 1
 
 os.chdir("..")
+
+print("Total photos to be generated: %d" % (numPhotosToGeneratePerBackground*numBackgrounds))
 
 totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #number of photos to be generated
 
