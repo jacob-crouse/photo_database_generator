@@ -3,8 +3,6 @@
 ### Date Created: August 6th, 2019
 The purpose of this program is to minimize repetitive work necessary when creating large, randomized photo databases which are generally used for training neural networks. Normally when doing this sort of work, it involves superimposing some image over a background in random locations and orientations in order to increase the material the neural network has to train with. But, this can be time-consuming and tedious, so I wanted to create this program to speed that process up.  
 
-At the moment, the script scales the foreground to be a certain size within the background in order to make the image look as if the background image was taken at 25 meters above the ground, with the foregrounds being a certain specified size as per the IMAV ruleset. In the future, I hope to extend this functionality to make it more general.
-
 ## Install Dependencies
 This python script requires the numpy and Pillow modules. If you don't have Python or these modules installed, you can run:  
 

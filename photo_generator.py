@@ -25,7 +25,7 @@ def calcSizes(box_physical_dims, bg_physical_dims, bg_images, numBackgrounds, nu
     return crop_sizes
 
 #generate cropped images for all foregrounds for each background
-def genCroppedImages(numBackgrounds, numForegrounds, fore_references): #rows = bg, cols = fore
+def genCroppedImages(numBackgrounds, numForegrounds, fore_references,crop_sizes): #rows = bg, cols = fore
     cropped_fores = []
 
     for bg in range(numBackgrounds):
@@ -50,7 +50,7 @@ def genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhot
     return bg_copies
 
 #superimpose each foreground image onto each background image
-def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
+def superimpose(bg_copies, numBackgrounds, cropped_fores, numForegrounds, totalPhotosToGenerate):
     overflowCounter = 0
 
     #change the working directory to a pre-generated folder (for organization)
@@ -136,97 +136,98 @@ def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
 
 
 
-#define constant variables
-numPhotosToGeneratePerBackground = int(input("How many photos would you like per background?: "))
-#originalPhotoAspectRatio = [4,3] #the original aspect ratio of the camera for the background images
-#bg_physical_dims = (80.56, 60.5) #m, ground dimensions of the image from 25m above the ground
-#boxDims_red = (0.75, 0.65) #m, dimensions of the post box
-#boxDims_blue = (1.2, 1.2) #m, dimensions of the post box
-#boxDims_yellow = (1.5, 1.5) #m, dimensions of the post box
-#box_physical_dims = (boxDims_red, boxDims_blue, boxDims_yellow)
+#define the class to instantiate a static variable
 class var:
     photosGenerated = 1
 
 
-#read in the input file parameters
-f = open("input.txt", "r")
-row = f.readlines()
+#define the main script of the function
+def main():
+    #define constant variables
+    numPhotosToGeneratePerBackground = int(input("How many photos would you like per background?: "))
 
-bg_physical_dims = [] 
-box_physical_dims = [] 
-i = 0
-sec = 0
-ontext = False
+    #read in the input file parameters
+    f = open("input.txt", "r")
+    row = f.readlines()
 
-while i < len(row):
-    #logic for determining what sort of value the current line contains
-    if row[i] == "ar\n":
-        ontext = True
-    if row[i] == "bg\n":
-        sec += 1
-        ontext = True
-    elif row[i] == "fg\n":
-        sec += 1
-        ontext = True
-
-    if sec == 0 and ontext == False:#current line is an aspect ratio value
-        tmp = row[i].split(",")
-        originalPhotoAspectRatio = [int(tmp[0]), int(tmp[1])]
-        #print(originalPhotoAspectRatio)
-    elif sec == 1 and ontext == False:#current line is a background physical dimension
-        tmp = row[i].split(",")
-        bg_physical_dims.append((float(tmp[0]), float(tmp[1])))
-        #print(bg_physical_dims)
-    elif sec == 2 and ontext == False:#current line is a foreground physical dimension
-        tmp = row[i].split(",")
-        box_physical_dims.append((float(tmp[0]), float(tmp[1])))
-        #print(box_physical_dims)
-
+    bg_physical_dims = [] 
+    box_physical_dims = [] 
+    i = 0
+    sec = 0
     ontext = False
-    i += 1
 
-f.close()
+    while i < len(row):
+        #logic for determining what sort of value the current line contains
+        if row[i] == "ar\n":
+            ontext = True
+        if row[i] == "bg\n":
+            sec += 1
+            ontext = True
+        elif row[i] == "fg\n":
+            sec += 1
+            ontext = True
 
-#convert the lists to tuples (immutable)
-bg_physical_dims = tuple(bg_physical_dims)
-box_physical_dims = tuple(box_physical_dims)
+        if sec == 0 and ontext == False:#current line is an aspect ratio value
+            tmp = row[i].split(",")
+            originalPhotoAspectRatio = [int(tmp[0]), int(tmp[1])]
+            #print(originalPhotoAspectRatio)
+        elif sec == 1 and ontext == False:#current line is a background physical dimension
+            tmp = row[i].split(",")
+            bg_physical_dims.append((float(tmp[0]), float(tmp[1])))
+            #print(bg_physical_dims)
+        elif sec == 2 and ontext == False:#current line is a foreground physical dimension
+            tmp = row[i].split(",")
+            box_physical_dims.append((float(tmp[0]), float(tmp[1])))
+            #print(box_physical_dims)
 
-#import all the foregrounds
-os.chdir("foregrounds")
-foreground_files = os.listdir(".")
-numForegrounds = len(foreground_files)
-fore_references = []
-fore_dims = []
-counter = 0
-for file in foreground_files:
-    fore_references += [Image.open(file)]
-    fore_dims += [fore_references[counter].size]
-    counter += 1
+        ontext = False
+        i += 1
 
-#import all the backgrounds
-os.chdir("../backgrounds")
-background_files = os.listdir(".")
-numBackgrounds = len(background_files)
-bg_references = []
-counter = 0
-for file in background_files:
-    bg_references += [Image.open(file)]
-    counter += 1
+    f.close()
 
-os.chdir("..")
+    #convert the lists to tuples (immutable)
+    bg_physical_dims = tuple(bg_physical_dims)
+    box_physical_dims = tuple(box_physical_dims)
 
-print("Total photos to be generated: %d" % (numPhotosToGeneratePerBackground*numBackgrounds))
+    #import all the foregrounds
+    os.chdir("foregrounds")
+    foreground_files = os.listdir(".")
+    numForegrounds = len(foreground_files)
+    fore_references = []
+    fore_dims = []
+    counter = 0
+    for file in foreground_files:
+        fore_references += [Image.open(file)]
+        fore_dims += [fore_references[counter].size]
+        counter += 1
 
-totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #number of photos to be generated
+    #import all the backgrounds
+    os.chdir("../backgrounds")
+    background_files = os.listdir(".")
+    numBackgrounds = len(background_files)
+    bg_references = []
+    counter = 0
+    for file in background_files:
+        bg_references += [Image.open(file)]
+        counter += 1
 
-#generate the right amount of copies of the background images
-bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate, originalPhotoAspectRatio)
+    os.chdir("..")
 
-#calculate the different sizes for the fore images
-crop_sizes = calcSizes(box_physical_dims, bg_physical_dims, bg_copies, numBackgrounds, numForegrounds)
+    print("Total photos to be generated: %d" % (numPhotosToGeneratePerBackground*numBackgrounds))
 
-#generate the cropped images
-cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references)
+    totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #number of photos to be generated
 
-#superimpose each foreground onto each background, save the images
-superimpose(bg_copies, cropped_fores, totalPhotosToGenerate)
+    #generate the right amount of copies of the background images
+    bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate, originalPhotoAspectRatio)
+
+    #calculate the different sizes for the fore images
+    crop_sizes = calcSizes(box_physical_dims, bg_physical_dims, bg_copies, numBackgrounds, numForegrounds)
+
+    #generate the cropped images
+    cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references, crop_sizes)
+
+    #superimpose each foreground onto each background, save the images
+    superimpose(bg_copies, numBackgrounds, cropped_fores, numForegrounds, totalPhotosToGenerate)
+
+if __name__ == "__main__":
+    main()
