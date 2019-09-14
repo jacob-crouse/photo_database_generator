@@ -17,26 +17,26 @@ Befor running the script, please create 2 folders: `backgrounds` and `foreground
 
 Additionally, please create a file called `input.txt`. Information provided in this text file should be as follows:  
 
-`ar`
-`originalPhotoAspectRatio (the original aspect ratio of the camera for the background images)`
-`bg`
-`background_physical_dimensions (m, horiz.x vert., ground dimensions of the image from above the ground)`
-`fg`
+`ar`  
+`originalPhotoAspectRatio (the original aspect ratio of the camera for the background images)`  
+`bg`  
+`background_physical_dimensions (m, horiz.x vert., ground dimensions of the image from above the ground)`  
+`fg`  
 `foreground_physical_dimensions (m, horiz.x vert., physical dimensions of the foreground image`  
 
 An example of this `input.txt` can be seen below. This example assumes there are 4 backgrounds (all backgrounds are assumed to have the same aspect ratio) and 3 foregrounds:  
 
-`ar`
-`4, 3`
-`bg`
-`80.56, 60.5`
-`80.56, 60.5`
-`80.56, 60.5`
-`80.56, 60.5`
-`fg`
-`0.75, 0.65`
-`1.2, 1.2`
-`1.5, 1.5`
+`ar`  
+`4, 3`  
+`bg`  
+`80.56, 60.5`  
+`80.56, 60.5`  
+`80.56, 60.5`  
+`80.56, 60.5`  
+`fg`  
+`0.75, 0.65`  
+`1.2, 1.2`  
+`1.5, 1.5`  
 
 After the dependencies are downloaded, the script can be run using: 
 
