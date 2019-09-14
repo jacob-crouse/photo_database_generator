@@ -2,7 +2,7 @@
 # Photo Database Generator                                       #
 # Author: Jacob Crouse                                           #
 # Date Created: August 6th, 2019                                 #
-# Date Modified: August 12th, 2019                               #
+# Date Modified: September 14th, 2019                            #
 # Purpose: This program is for randomly creating superimposed    #
 #          images that will be used to train neural networks     #
 #          for target recognition and object detection.          #
@@ -12,14 +12,14 @@ import numpy as np
 import os
 
 #calculate cropped sizes for each foreground image
-def calcSizes(box_physical_dims, fore_dims, bg_images, numBackgrounds, numForegrounds): #[rows][columns]
+def calcSizes(box_physical_dims, bg_physical_dims, bg_images, numBackgrounds, numForegrounds): #[rows][columns]
     crop_sizes = []
 
     for bg in range(numBackgrounds): #for each background
         crop_sizes += [[]]
         for fore in range(numForegrounds): #and for each foreground, calculate the cropped image dimensions
-                xdim = np.floor(box_physical_dims[fore][0] / bg_physical_dims[0] * bg_images[bg][0].size[0])
-                ydim = np.floor(box_physical_dims[fore][1] / bg_physical_dims[1] * bg_images[bg][0].size[1])
+                xdim = np.floor(box_physical_dims[fore][0] / bg_physical_dims[bg][0] * bg_images[bg][0].size[0])
+                ydim = np.floor(box_physical_dims[fore][1] / bg_physical_dims[bg][1] * bg_images[bg][0].size[1])
                 crop_sizes[bg].append([xdim, ydim])
 
     return crop_sizes
@@ -113,12 +113,56 @@ def superimpose(bg_copies, cropped_fores,totalPhotosToGenerate):
 
 #define constant variables
 numPhotosToGeneratePerBackground = int(input("How many photos would you like per background?: "))
-originalPhotoAspectRatio = [4,3] #the original aspect ratio of the camera for the background images
-bg_physical_dims = (80.56, 60.5) #m, ground dimensions of the image from 25m above the ground
-boxDims_red = (0.75, 0.65) #m, dimensions of the post box
-boxDims_blue = (1.2, 1.2) #m, dimensions of the post box
-boxDims_yellow = (1.5, 1.5) #m, dimensions of the post box
-box_physical_dims = (boxDims_red, boxDims_blue, boxDims_yellow)
+#originalPhotoAspectRatio = [4,3] #the original aspect ratio of the camera for the background images
+#bg_physical_dims = (80.56, 60.5) #m, ground dimensions of the image from 25m above the ground
+#boxDims_red = (0.75, 0.65) #m, dimensions of the post box
+#boxDims_blue = (1.2, 1.2) #m, dimensions of the post box
+#boxDims_yellow = (1.5, 1.5) #m, dimensions of the post box
+#box_physical_dims = (boxDims_red, boxDims_blue, boxDims_yellow)
+
+
+#read in the input file parameters
+f = open("input.txt", "r")
+row = f.readlines()
+
+bg_physical_dims = [] 
+box_physical_dims = [] 
+i = 0
+sec = 0
+ontext = False
+
+while i < len(row):
+    #logic for determining what sort of value the current line contains
+    if row[i] == "ar\n":
+        ontext = True
+    if row[i] == "bg\n":
+        sec += 1
+        ontext = True
+    elif row[i] == "fg\n":
+        sec += 1
+        ontext = True
+
+    if sec == 0 and ontext == False:#current line is an aspect ratio value
+        tmp = row[i].split(",")
+        originalPhotoAspectRatio = [int(tmp[0]), int(tmp[1])]
+        #print(originalPhotoAspectRatio)
+    elif sec == 1 and ontext == False:#current line is a background physical dimension
+        tmp = row[i].split(",")
+        bg_physical_dims.append((float(tmp[0]), float(tmp[1])))
+        #print(bg_physical_dims)
+    elif sec == 2 and ontext == False:#current line is a foreground physical dimension
+        tmp = row[i].split(",")
+        box_physical_dims.append((float(tmp[0]), float(tmp[1])))
+        #print(box_physical_dims)
+
+    ontext = False
+    i += 1
+
+f.close()
+
+#convert the lists to tuples (immutable)
+bg_physical_dims = tuple(bg_physical_dims)
+box_physical_dims = tuple(box_physical_dims)
 
 #import all the foregrounds
 os.chdir("foregrounds")
@@ -150,7 +194,7 @@ totalPhotosToGenerate = numPhotosToGeneratePerBackground * numBackgrounds #numbe
 bg_copies = genBackgroundCopies(numBackgrounds, numForegrounds, bg_references, totalPhotosToGenerate, originalPhotoAspectRatio)
 
 #calculate the different sizes for the fore images
-crop_sizes = calcSizes(box_physical_dims, fore_dims, bg_copies, numBackgrounds, numForegrounds)
+crop_sizes = calcSizes(box_physical_dims, bg_physical_dims, bg_copies, numBackgrounds, numForegrounds)
 
 #generate the cropped images
 cropped_fores = genCroppedImages(numBackgrounds, numForegrounds, fore_references)
